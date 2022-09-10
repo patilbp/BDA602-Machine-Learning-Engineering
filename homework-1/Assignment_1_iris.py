@@ -9,7 +9,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import Normalizer
+from sklearn.preprocessing import StandardScaler
 
 # Iris dataset URL
 iris_data_url = "https://teaching.mrsharky.com/data/iris.data"
@@ -37,7 +37,7 @@ def data_loader(path=iris_data_url) -> pd.DataFrame:
 def main() -> int:
     df_iris = data_loader()
     print("\n\n########## Iris Data Frame ##########\n")
-    print(df_iris)
+    print(df_iris.head())
 
     # Passing the loaded data-frame as function argument and converting it to pandas data-frame
     df_iris = df_iris.dropna()
@@ -71,7 +71,7 @@ def main() -> int:
 
     # (C)  Plotting data into visuals using plotly
 
-    # (1) Scatter-plots:
+    # (1) SCATTER plots:
     # (i) Sepal-width vs Sepal-length:
     figure = px.scatter(
         df_iris,
@@ -92,7 +92,23 @@ def main() -> int:
     )
     figure.show()
 
-    # (2) Violin plots:
+    # (iii) Sepal-width vs Sepal-length - with Petal-length as Size and Petal-width into details:
+
+    # I tried searching the relation between sepal and petal and then came across this link below:
+    # Reference link : https://qr.ae/pvOMtT
+
+    figure = px.scatter(
+        df_iris,
+        x="sepal_width",
+        y="sepal_length",
+        size="petal_length",
+        hover_data=["petal_width"],
+        color="class_type",
+        title="Scatter plot: Sepal-width vs Sepal-length",
+    )
+    figure.show()
+
+    # (2) VIOLIN plots:
     # (i) Sepal-width:
     figure = px.violin(
         df_iris,
@@ -145,7 +161,7 @@ def main() -> int:
     )
     figure.show()
 
-    # (3) Histogram plots:
+    # (3) HISTOGRAM plots:
     # (i) Sepal-width:
     figure = px.histogram(
         df_iris,
@@ -182,6 +198,68 @@ def main() -> int:
     )
     figure.show()
 
+    # Suggested by : My code buddy - 'Luis Sosa'
+    # Addition / Modification : Suggested to add 2 new plot types from plotly.
+
+    # (4) PIE plot:
+    figure = px.pie(
+        df_iris,
+        values="petal_length",
+        names="class_type",
+        color_discrete_sequence=px.colors.sequential.RdBu,
+        title="Pie chart : Petal-length distribution by Class",
+    )
+    figure.show()
+
+    # (5) BOX plots:
+    # (i) Sepal-width:
+    figure = px.box(
+        df_iris,
+        x="class_type",
+        y="sepal_width",
+        color="class_type",
+        points="all",
+        hover_data=df_iris.columns,
+        title="Box plot: Sepal-width as attribute",
+    )
+    figure.show()
+
+    # (ii) Sepal-length:
+    figure = px.box(
+        df_iris,
+        x="class_type",
+        y="sepal_length",
+        color="class_type",
+        points="all",
+        hover_data=df_iris.columns,
+        title="Box plot: Sepal-length as attribute",
+    )
+    figure.show()
+
+    # (iii) Petal-width:
+    figure = px.box(
+        df_iris,
+        x="class_type",
+        y="petal_width",
+        color="class_type",
+        points="all",
+        hover_data=df_iris.columns,
+        title="Box plot: Petal-width as attribute",
+    )
+    figure.show()
+
+    # (iv) Petal-length:
+    figure = px.box(
+        df_iris,
+        x="class_type",
+        y="petal_length",
+        color="class_type",
+        points="all",
+        hover_data=df_iris.columns,
+        title="Box: Petal-length as attribute",
+    )
+    figure.show()
+
     # -----------------------------------------------------------------------------------------------------
 
     # (D) Building models on the data
@@ -206,11 +284,17 @@ def main() -> int:
     print("Training data-set size: ", X_train.shape)
     print("Testing data-set size: ", X_test.shape)
 
+    # Suggested by : My code buddy - 'Luis Sosa'
+    # Addition / Modification : Use "StandardScaler()" instead of "Normalizer()".
+
     # (i) Random Forest Classifier:
 
     # Initializing the pipeline for normalizing data using RandomForest Classifier
     pipeline_random_forest = Pipeline(
-        [("Normalize", Normalizer()), ("rf", RandomForestClassifier(random_state=1234))]
+        [
+            ("scaler", StandardScaler()),
+            ("rf", RandomForestClassifier(random_state=1234)),
+        ]
     )
 
     # Implementing pipeline to normalize the data using RandomForest Classifier
@@ -223,7 +307,7 @@ def main() -> int:
     print("\n\n\n########## Model Accuracy Results ##########\n")
 
     # Displaying the Accuracy results of RandomForest Classifier model
-    print("\n(1) Model accuracy using Random Forest Classifier:")
+    print("(1) Model accuracy using Random Forest Classifier:")
     accuracy_random_forest = accuracy_score(y_test, predict_random_forest)
     print(f"Accuracy is: {accuracy_random_forest}")
 
@@ -231,7 +315,7 @@ def main() -> int:
 
     # Initializing the pipeline for normalizing data using Logistic Regression
     pipeline_logistic_regression = Pipeline(
-        [("Normalize", Normalizer()), ("lf_fit", LogisticRegression())]
+        [("scaler", StandardScaler()), ("lf_fit", LogisticRegression())]
     )
 
     # Implementing pipeline to normalize the data using LogisticRegression
@@ -241,7 +325,7 @@ def main() -> int:
     predict_logistic_regression = pipeline_logistic_regression.predict(X_test)
 
     # Displaying the Accuracy results of LogisticRegression model
-    print("\n\n(2) Model accuracy using Logistic Regression:")
+    print("\n(2) Model accuracy using Logistic Regression:")
     accuracy_logistic_regression = accuracy_score(y_test, predict_logistic_regression)
     print(f"Accuracy is: {accuracy_logistic_regression}")
 
@@ -249,7 +333,7 @@ def main() -> int:
 
     # Initializing the pipeline for normalizing data using Linear Discriminant Analysis Classifier
     pipeline_lda_classifier = Pipeline(
-        [("Normalize", Normalizer()), ("lda", LDA(n_components=1))]
+        [("scaler", StandardScaler()), ("lda", LDA(n_components=1))]
     )
 
     # Implementing pipeline to normalize the data using LDA Classifier
@@ -259,9 +343,9 @@ def main() -> int:
     predict_lda_classifier = pipeline_lda_classifier.predict(X_test)
 
     # Displaying the Accuracy results of LDA Classifier model
-    print("\n\n(3) Model accuracy using Linear Discriminant Analysis (LDA) Classifier:")
+    print("\n(3) Model accuracy using Linear Discriminant Analysis (LDA) Classifier:")
     accuracy_lda_classifier = accuracy_score(y_test, predict_lda_classifier)
-    print(f"Accuracy is: {accuracy_lda_classifier}")
+    print(f"Accuracy is: {accuracy_lda_classifier}\n")
 
 
 if __name__ == "__main__":
