@@ -4,4 +4,4 @@ numpy
 pandas
 plotly
 scikit-learn
-sqlalchemy
+sqlfluff
