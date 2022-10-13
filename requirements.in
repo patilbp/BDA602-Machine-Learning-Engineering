@@ -3,5 +3,7 @@ mariadb
 numpy
 pandas
 plotly
+pyspark
+pyspark-stubs
 scikit-learn
 sqlfluff
