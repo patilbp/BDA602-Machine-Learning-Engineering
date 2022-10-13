@@ -2,7 +2,7 @@ import sys
 
 from pyspark import StorageLevel
 from pyspark.sql import SparkSession
-from RollingAvgTransform import RollingBatAvgTransform
+from rolling_bat_avg_transform import RollingBatAvgTransform
 
 # mariadb-java-client-3.0.8.jar
 # jdbc:mariadb://localhost:3306/baseball
