@@ -3,19 +3,17 @@ import sys
 
 import numpy as np
 import pandas as pd
-import pandas.core.algorithms as algos
 import statsmodels.api as sapi
 from plotly import express as px
 from plotly import figure_factory as ff
 from plotly import graph_objects as go
 from plotly.subplots import make_subplots
 from scipy import stats
-from sklearn.datasets import load_boston, load_breast_cancer, load_diabetes
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.metrics import confusion_matrix
 
 
-# Validate if Response type is Categorical or Continuous
+# (1) Determine if response type is continuous or boolean
 def response_type(dataset_df):
     if dataset_df.target.nunique() > 2:
         return "Continuous"
@@ -23,7 +21,7 @@ def response_type(dataset_df):
         return "Boolean"
 
 
-# Validate if Predictor type is Categorical, as categorical type has less unique values
+# (2) Determine if the predictor type is categorical/continuous, as categorical type has less unique values
 def predictor_type(predictor_field):
     if (
         predictor_field.dtypes == "object"
@@ -34,6 +32,7 @@ def predictor_type(predictor_field):
         return False
 
 
+# (3) Automatically generate the necessary plot(s) to inspect it
 # Create Heatmap plot for 'Categorical Predictor by Categorical Response'
 def create_heatmap(df, col, filename):
     confusion_mat = confusion_matrix(df[col], df["target"])
@@ -65,16 +64,16 @@ def create_violin(df, col, filename):
 
     # adding separate axis titles
     for i in group_names:
-        y_title = df["target"][df[col] == i]
         x_title = df[col][df[col] == i]
+        y_title = df["target"][df[col] == i]
 
         violin_fig.add_trace(
             go.Violin(
-                y=y_title,
                 x=x_title,
-                name=i.astype(str)
-                # box_visible=True,
-                # meanline_visible=True
+                y=y_title,
+                name=i.astype(str),
+                box=True,
+                meanline=True,
             )
         )
 
@@ -174,71 +173,74 @@ def create_diff_mean_response(df, pop_divide):
     )
 
 
+# Difference with mean of response along with its plot (weighted and unweighted)
 def mean_unweighted_weighted(d2, pop_divide, df):
-    d3 = pd.DataFrame({}, index=[])
-    d3["Mean"] = d2.mean().X
-    d3["LowerBin"] = d2.min().X
-    d3["UpperBin"] = d2.max().X
-    d3["COUNT"] = d2.count().Y
-    d3["Pop_mean"] = pop_divide
-    proportion = d3["COUNT"] / len(df)
-    d3["BinMean"] = d2.mean().Y
-    d3["Mean_sq_diff"] = (d3.BinMean - pop_divide) ** 2
-    d3["Mean_sq_diffW"] = d3.Mean_sq_diff * proportion
+    df_mean = pd.DataFrame({}, index=[])
+    df_mean["Mean"] = d2.mean().X
+    df_mean["LowerBin"] = d2.min().X
+    df_mean["UpperBin"] = d2.max().X
+    df_mean["COUNT"] = d2.count().Y
+    df_mean["Pop_mean"] = pop_divide
+    population = df_mean["COUNT"] / len(df)
+    df_mean["BinMean"] = d2.mean().Y
+    df_mean["Mean_sq_diff"] = (df_mean.BinMean - pop_divide) ** 2
+    df_mean["Mean_sq_diffW"] = df_mean.Mean_sq_diff * population
 
-    create_diff_mean_response(d3, pop_divide)
-    return d3["Mean_sq_diff"].sum(), d3["Mean_sq_diffW"].sum()
+    create_diff_mean_response(df_mean, pop_divide)
+    return df_mean["Mean_sq_diff"].sum(), df_mean["Mean_sq_diffW"].sum()
 
 
-# Add - Bin Candidate Predictor Variable
+# Calculate - Bin Candidate Predictor Variable
 # Reference: https://teaching.mrsharky.com/sdsu_fall_2020_lecture06.html#/6/0/10
 
+# Assigning max bin size and minimum bin size
 max_bin = 10
 force_bin = 3
 
 
+# Calculate mean of response type for continuous
 def mean_of_response_cont(df, col, pop_divide, n=max_bin):
     print(col)
     r = 0
 
+    # Hint from lecture notes - Bin candidate predictor variable
+    # Reference: https://teaching.mrsharky.com/sdsu_fall_2020_lecture06.html/6/0/10
     while np.abs(r) < 1:
-        try:
-            d1 = pd.DataFrame(
-                {"X": df[col], "Y": df["target"], "Bucket": pd.qcut(df[col], n)}
-            )
-
-            d2 = d1.groupby("Bucket", as_index=True)
-
-            r, p = stats.spearmanr(d2.mean().X, d2.mean().Y)
-            n = n - 1
-
-        except Exception:
-            n = n - 1
-
-    # Working on quantile part. Pending as of now.
-    # Creating bins
-    if len(d2) == 1:
-        n = force_bin
-        bins = algos.quantile(df[col], np.linspace(0, 1, n))
-
-        if len(np.unique(bins)) == 2:
-            bins = np.insert(bins, 0, 1)
-            bins[1] = bins[1] - (bins[1] / 2)
-
         d1 = pd.DataFrame(
-            {
-                "X": df[col],
-                "Y": df["target"],
-                "Bucket": pd.cut(df[col], np.unique(bins), include_lowest=True),
-            }
+            {"X": df[col], "Y": df["target"], "Bucket": pd.qcut(df[col], n)}
         )
 
         d2 = d1.groupby("Bucket", as_index=True)
 
+        # calculation for mean of response
+        r, p = stats.spearmanr(d2.mean().X, d2.mean().Y)
+        n = n - 1
+
+        # creating minimum no. of bins using numpy quantile
+        if len(d2) == 1:
+            n = force_bin
+            bins = np.quantile(df[col], np.linspace(0, 1, n))
+
+            if len(np.unique(bins)) == 2:
+                bins = np.insert(bins, 0, 1)
+                bins[1] = bins[1] - (bins[1] / 2)
+
+            d1 = pd.DataFrame(
+                {
+                    "X": df[col],
+                    "Y": df["target"],
+                    "Bucket": pd.cut(df[col], np.unique(bins), include_lowest=True),
+                }
+            )
+
+            d2 = d1.groupby("Bucket", as_index=True)
+
     return mean_unweighted_weighted(d2, pop_divide, df)
 
 
+# Calculate mean of response type for categorical
 def mean_of_response_cat(df, col, pop_divide):
+    # categorical data is already binned in itself
     d1 = pd.DataFrame({"X": df[col], "Y": df["target"]}).groupby(df[col])
     return mean_unweighted_weighted(d1, pop_divide, df)
 
@@ -246,8 +248,9 @@ def mean_of_response_cat(df, col, pop_divide):
 # Reference UCI Website:
 # https://archive.ics.uci.edu/ml/datasets/breast+cancer+wisconsin+(diagnostic)
 def read_breast_cancer_data():
+    # downloaded and uploaded 'wdbc.data' inside a public repository
+    data_url = "https://raw.githubusercontent.com/patilbp/datasets/main/wdbc.data"
 
-    data_url = "https://raw.githubusercontent.com/patilbp/datasets/main/wisconsin-breast-cancer.csv"
     columns = [
         "id",
         "diagnosis",
@@ -287,44 +290,24 @@ def read_breast_cancer_data():
     return used_dataset
 
 
+# Main() function, calling all modules
 def main(file, response):
-    # finds if any csv is passed as input
-    if file == "1":
-        if response == "1":
-            data = load_boston()
-            res_name = "Species"
-
-        elif response == "2":
-            data = load_diabetes()
-            res_name = "Outcome"
-
-        else:
-            data = load_breast_cancer()
-            res_name = "diagnosis"
-
-        read_data = pd.DataFrame(data.data, columns=data.feature_names)
-        read_data["target"] = pd.Series(data.target)
-
-    # if not found any dataset then read dataset of Breast Cancer.CSV
-    else:
-        if file == "":
-            read_data = read_breast_cancer_data()
-        else:
-            try:
-                read_data = pd.read_csv(file)
-            except FileNotFoundError:
-                read_data = read_breast_cancer_data()
-
-        # if user gives no response variable then use the Breast Cancer response variable
+    # finds if any file/csv is passed as input
+    # if not then sets the default dataset and default response
+    if file == "":
         if response == "":
             response = "diagnosis"
 
-        res_name = response
-        print(response)
+    # read default dataset passed
+    read_data = read_breast_cancer_data()
+
+    # display response name
+    response_name = response
+    print("\nResponse Name: ", response_name, "\n")
 
     # make the column names generic, by using target column as response variable
     read_data = read_data.rename(columns={response: "target"})
-    print(read_data.head())
+    print("Dataset (head 5 rows):\n", read_data.head())
 
     # get rid of NULL Values
     read_data = read_data.dropna(axis=1, how="any")
@@ -357,7 +340,7 @@ def main(file, response):
 
     # validate if Response variable type is 'Boolean' or 'Continuous'
     res_type = response_type(read_data)
-    print("Response variable is: " + res_type)
+    print("\nResponse variable is: " + res_type)
 
     # if Categorical then convert values to '1' and '0'
     if res_type == "Boolean":
@@ -517,7 +500,7 @@ def main(file, response):
         )
 
     # mapping resultant tabular data frame by row values
-    output_df["Response"] = res_name
+    output_df["Response"] = response_name
     output_df["Response_Type"] = res_type
     output_df["Cat/Con"] = out
     output_df["Plot_Link"] = f_path
