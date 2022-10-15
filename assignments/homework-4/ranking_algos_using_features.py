@@ -242,6 +242,7 @@ def mean_of_response_cont(df, col, pop_divide, n=max_bin):
 def mean_of_response_cat(df, col, pop_divide):
     # categorical data is already binned in itself
     d1 = pd.DataFrame({"X": df[col], "Y": df["target"]}).groupby(df[col])
+
     return mean_unweighted_weighted(d1, pop_divide, df)
 
 
@@ -251,6 +252,7 @@ def read_breast_cancer_data():
     # downloaded and uploaded 'wdbc.data' inside a public repository
     data_url = "https://raw.githubusercontent.com/patilbp/datasets/main/wdbc.data"
 
+    # column names were missing in my referenced data, so added separately
     columns = [
         "id",
         "diagnosis",
@@ -519,8 +521,7 @@ def main(file, response):
 
 
 if __name__ == "__main__":
+    # passing file and response arguments as inputs
     f_name = sys.argv[1] if len(sys.argv) > 1 else ""
-    # print(f_name)
     r_name = sys.argv[2] if len(sys.argv) > 1 else ""
-    # print(r_name)
     sys.exit(main(f_name, r_name))
