@@ -18,13 +18,13 @@ click==8.1.3
     # via sqlfluff
 colorama==0.4.6
     # via sqlfluff
-contourpy==1.0.5
+contourpy==1.0.6
     # via matplotlib
 cycler==0.11.0
     # via matplotlib
-diff-cover==7.0.1
+diff-cover==7.0.2
     # via sqlfluff
-exceptiongroup==1.0.0
+exceptiongroup==1.0.4
     # via pytest
 fonttools==4.38.0
     # via matplotlib
@@ -38,11 +38,11 @@ joblib==1.2.0
     # via scikit-learn
 kiwisolver==1.4.4
     # via matplotlib
-mariadb==1.1.4
+mariadb==1.1.5.post2
     # via -r requirements.in
 markupsafe==2.1.1
     # via jinja2
-matplotlib==3.6.0
+matplotlib==3.6.2
     # via seaborn
 numpy==1.23.4
     # via
@@ -57,6 +57,7 @@ numpy==1.23.4
     #   statsmodels
 packaging==21.3
     # via
+    #   mariadb
     #   matplotlib
     #   pytest
     #   statsmodels
@@ -65,7 +66,7 @@ pandas==1.5.1
     #   -r requirements.in
     #   seaborn
     #   statsmodels
-pathspec==0.10.1
+pathspec==0.10.2
     # via sqlfluff
 patsy==0.5.3
     # via statsmodels
@@ -97,11 +98,11 @@ python-dateutil==2.8.2
     # via
     #   matplotlib
     #   pandas
-pytz==2022.5
+pytz==2022.6
     # via pandas
 pyyaml==6.0
     # via sqlfluff
-regex==2022.9.13
+regex==2022.10.31
     # via sqlfluff
 scikit-learn==1.1.3
     # via -r requirements.in
@@ -116,9 +117,9 @@ six==1.16.0
     # via
     #   patsy
     #   python-dateutil
-sqlfluff==1.3.2
+sqlfluff==1.4.2
     # via -r requirements.in
-statsmodels==0.13.2
+statsmodels==0.13.5
     # via -r requirements.in
 tblib==1.7.0
     # via sqlfluff
