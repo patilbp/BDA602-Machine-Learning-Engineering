@@ -6,7 +6,7 @@ plotly
 pyspark
 pyspark-stubs
 scikit-learn
-sqlfluff
-statsmodels
 scipy
 seaborn
+sqlfluff
+statsmodels
