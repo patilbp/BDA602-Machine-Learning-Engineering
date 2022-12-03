@@ -10,7 +10,7 @@ argparse==1.4.0
     # via -r requirements.in
 attrs==22.1.0
     # via pytest
-chardet==5.0.0
+chardet==5.1.0
     # via
     #   diff-cover
     #   sqlfluff
@@ -22,7 +22,7 @@ contourpy==1.0.6
     # via matplotlib
 cycler==0.11.0
     # via matplotlib
-diff-cover==7.0.2
+diff-cover==7.2.0
     # via sqlfluff
 exceptiongroup==1.0.4
     # via pytest
@@ -38,13 +38,13 @@ joblib==1.2.0
     # via scikit-learn
 kiwisolver==1.4.4
     # via matplotlib
-mariadb==1.1.5.post2
+mariadb==1.1.5.post3
     # via -r requirements.in
 markupsafe==2.1.1
     # via jinja2
 matplotlib==3.6.2
     # via seaborn
-numpy==1.23.4
+numpy==1.23.5
     # via
     #   -r requirements.in
     #   contourpy
@@ -61,7 +61,7 @@ packaging==21.3
     #   matplotlib
     #   pytest
     #   statsmodels
-pandas==1.5.1
+pandas==1.5.2
     # via
     #   -r requirements.in
     #   seaborn
