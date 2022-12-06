@@ -10,17 +10,16 @@ services:
       - MYSQL_USER=root
       - MYSQL_PASSWORD=eldudeH.22 # pragma: allowlist secret
       - MYSQL_ROOT_PASSWORD=eldudeH.22 # pragma: allowlist secret
-      - MYSQL_DATABASE=baseball
     volumes:
       - ./db:/config
     restart: unless-stopped
-  docker_rolling_avg:
-    container_name: docker_rolling_avg #rolling average container
+  docker-rolling-avg:
+    container_name: docker-rolling-avg #rolling average container
     depends_on:
       - mariadb
     build:
       context: .
       dockerfile: Dockerfile
-    image: docker_rolling_avg
+    image: docker-rolling-avg
     volumes:
       - ./result:/result
